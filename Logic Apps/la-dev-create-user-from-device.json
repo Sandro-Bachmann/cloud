@@ -1,0 +1,310 @@
+{
+    "id": "la-dev-endpoint",
+    "title": "la-dev-endpoint",
+    "description": "la-dev-endpoint",
+    "iconType": "ScheduledTask",
+    "skuType": "Consumption",
+    "data": {
+        "definition": {
+            "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+            "actions": {
+                "Compose_Final": {
+                    "inputs": "@variables('final')",
+                    "runAfter": {
+                        "For_each": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "Compose"
+                },
+                "Create_AD_Users": {
+                    "actions": {
+                        "Create_user": {
+                            "inputs": {
+                                "body": {
+                                    "accountEnabled": true,
+                                    "displayName": "@items('Create_AD_Users')['displayName']",
+                                    "mailNickname": "@items('Create_AD_Users')['displayName']",
+                                    "passwordProfile": {
+                                        "password": "schueler2022!"
+                                    },
+                                    "userPrincipalName": "@{items('Create_AD_Users')['displayName']}@m365edu954358.onmicrosoft.com"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuread']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/v1.0/users"
+                            },
+                            "runAfter": {},
+                            "type": "ApiConnection"
+                        }
+                    },
+                    "foreach": "@body('Parse_JSON')",
+                    "runAfter": {
+                        "Parse_JSON": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "Foreach"
+                },
+                "For_each": {
+                    "actions": {
+                        "Condition": {
+                            "actions": {
+                                "Compose": {
+                                    "inputs": "match",
+                                    "runAfter": {},
+                                    "type": "Compose"
+                                }
+                            },
+                            "else": {
+                                "actions": {
+                                    "Append_to_array_variable": {
+                                        "inputs": {
+                                            "name": "final",
+                                            "value": "@item()"
+                                        },
+                                        "runAfter": {},
+                                        "type": "AppendToArrayVariable"
+                                    }
+                                }
+                            },
+                            "expression": {
+                                "and": [
+                                    {
+                                        "contains": [
+                                            "@variables('user')",
+                                            "@item()"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "runAfter": {},
+                            "type": "If"
+                        }
+                    },
+                    "foreach": "@variables('device')",
+                    "runAfter": {
+                        "Initialize_variable_Final": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "Foreach"
+                },
+                "Initialize_variable_Device": {
+                    "inputs": {
+                        "variables": [
+                            {
+                                "name": "device",
+                                "type": "array",
+                                "value": "@body('Parse_JSON_devices')?['value']"
+                            }
+                        ]
+                    },
+                    "runAfter": {
+                        "Parse_JSON_devices": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "InitializeVariable"
+                },
+                "Initialize_variable_Final": {
+                    "inputs": {
+                        "variables": [
+                            {
+                                "name": "final",
+                                "type": "array"
+                            }
+                        ]
+                    },
+                    "runAfter": {
+                        "Initialize_variable_User": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "InitializeVariable"
+                },
+                "Initialize_variable_User": {
+                    "inputs": {
+                        "variables": [
+                            {
+                                "name": "user",
+                                "type": "array",
+                                "value": "@body('Parse_JSON_users')?['value']"
+                            }
+                        ]
+                    },
+                    "runAfter": {
+                        "Parse_JSON_users": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "InitializeVariable"
+                },
+                "Parse_JSON": {
+                    "inputs": {
+                        "content": "@variables('final')",
+                        "schema": {
+                            "items": {
+                                "properties": {
+                                    "displayName": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "displayName"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        }
+                    },
+                    "runAfter": {
+                        "Compose_Final": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "ParseJson"
+                },
+                "Parse_JSON_devices": {
+                    "inputs": {
+                        "content": "@body('get_devices_from_tenant')",
+                        "schema": {
+                            "properties": {
+                                "@@odata.context": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "items": {
+                                        "properties": {
+                                            "displayName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "displayName"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "runAfter": {
+                        "get_devices_from_tenant": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "ParseJson"
+                },
+                "Parse_JSON_users": {
+                    "inputs": {
+                        "content": "@body('get_users_from_tenant')",
+                        "schema": {
+                            "properties": {
+                                "@@odata.context": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "items": {
+                                        "properties": {
+                                            "displayName": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "displayName"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    },
+                    "runAfter": {
+                        "get_users_from_tenant": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "ParseJson"
+                },
+                "get_devices_from_tenant": {
+                    "inputs": {
+                        "authentication": {
+                            "audience": "https://graph.microsoft.com",
+                            "clientId": "93cba8da-ce36-44c6-aa13-1fe123cdfbf4",
+                            "secret": "4TY8Q~1__WKq2RhtqnnI.xsrb6633Y5EGgEMTaS0",
+                            "tenant": "f631b54d-a674-430f-904f-3df2a0c0a6ce",
+                            "type": "ActiveDirectoryOAuth"
+                        },
+                        "method": "GET",
+                        "queries": {
+                            "$select": "displayName"
+                        },
+                        "uri": "https://graph.microsoft.com/beta/devices"
+                    },
+                    "runAfter": {},
+                    "type": "Http"
+                },
+                "get_users_from_tenant": {
+                    "inputs": {
+                        "authentication": {
+                            "audience": "https://graph.microsoft.com",
+                            "clientId": "93cba8da-ce36-44c6-aa13-1fe123cdfbf4",
+                            "secret": "4TY8Q~1__WKq2RhtqnnI.xsrb6633Y5EGgEMTaS0",
+                            "tenant": "f631b54d-a674-430f-904f-3df2a0c0a6ce",
+                            "type": "ActiveDirectoryOAuth"
+                        },
+                        "method": "GET",
+                        "queries": {
+                            "$select": "displayName"
+                        },
+                        "uri": "https://graph.microsoft.com/beta/users"
+                    },
+                    "runAfter": {
+                        "Initialize_variable_Device": [
+                            "Succeeded"
+                        ]
+                    },
+                    "type": "Http"
+                }
+            },
+            "contentVersion": "1.0.0.0",
+            "outputs": {},
+            "parameters": {
+                "$connections": {
+                    "defaultValue": {},
+                    "type": "Object"
+                }
+            },
+            "triggers": {
+                "Recurrence": {
+                    "evaluatedRecurrence": {
+                        "frequency": "Week",
+                        "interval": 1
+                    },
+                    "recurrence": {
+                        "frequency": "Week",
+                        "interval": 1
+                    },
+                    "type": "Recurrence"
+                }
+            }
+        },
+        "parameters": {},
+        "connections": {
+            "azuread": {
+                "id": "/subscriptions/0000-0000/providers/Microsoft.Web/locations/centralus/managedApis/azuread",
+                "connectionId": "",
+                "connectionName": ""
+            }
+        }
+    }
+}
