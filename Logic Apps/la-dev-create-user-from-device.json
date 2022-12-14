@@ -26,7 +26,7 @@
                                     "displayName": "@items('Create_AD_Users')['displayName']",
                                     "mailNickname": "@items('Create_AD_Users')['displayName']",
                                     "passwordProfile": {
-                                        "password": "schueler2022!"
+                                        "password": "secret"
                                     },
                                     "userPrincipalName": "@{items('Create_AD_Users')['displayName']}@m365edu954358.onmicrosoft.com"
                                 },
@@ -239,9 +239,9 @@
                     "inputs": {
                         "authentication": {
                             "audience": "https://graph.microsoft.com",
-                            "clientId": "93cba8da-ce36-44c6-aa13-1fe123cdfbf4",
-                            "secret": "4TY8Q~1__WKq2RhtqnnI.xsrb6633Y5EGgEMTaS0",
-                            "tenant": "f631b54d-a674-430f-904f-3df2a0c0a6ce",
+                            "clientId": "",
+                            "secret": "",
+                            "tenant": "",
                             "type": "ActiveDirectoryOAuth"
                         },
                         "method": "GET",
@@ -257,9 +257,9 @@
                     "inputs": {
                         "authentication": {
                             "audience": "https://graph.microsoft.com",
-                            "clientId": "93cba8da-ce36-44c6-aa13-1fe123cdfbf4",
-                            "secret": "4TY8Q~1__WKq2RhtqnnI.xsrb6633Y5EGgEMTaS0",
-                            "tenant": "f631b54d-a674-430f-904f-3df2a0c0a6ce",
+                            "clientId": "",
+                            "secret": "",
+                            "tenant": "",
                             "type": "ActiveDirectoryOAuth"
                         },
                         "method": "GET",
